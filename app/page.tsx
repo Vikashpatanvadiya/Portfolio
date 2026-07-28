@@ -71,13 +71,6 @@ const wins: { segments: ({ text: string; href?: string })[] }[] = [
       { text: "Won in a Web2 Hackathon by developing a Smart Attendance System." },
     ],
   },
-  {
-    segments: [
-      { text: "Reverse-engineered " },
-      { text: "Screen Studio", href: "https://screen.studio" },
-      { text: "'s rendering pipeline and built a custom renderer." },
-    ],
-  },
 ];
 
 const socials = [
