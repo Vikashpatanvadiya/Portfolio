@@ -74,7 +74,7 @@ const wins: { segments: ({ text: string; href?: string })[] }[] = [
 ];
 
 const socials = [
-  { label: "x (twitter)", href: "https://x.com/VPatanvadi89747" },
+  { label: "x (twitter)", href: "https://x.com/vikash_sol" },
   { label: "github", href: "https://github.com/Vikashpatanvadiya" },
   { label: "instagram", href: "https://www.instagram.com/bansi.here/" },
   { label: "photography", href: "https://www.instagram.com/b1_clicks/" },
