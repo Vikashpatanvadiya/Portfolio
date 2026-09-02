@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Agentation } from "agentation";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://vikashpatanvadiya.vercel.app"),
@@ -43,6 +44,7 @@ export default function RootLayout({
       <body className="min-h-full">
         {children}
         {process.env.NODE_ENV === "development" && <Agentation />}
+        <Analytics />
       </body>
     </html>
   );
