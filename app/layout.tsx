@@ -2,21 +2,23 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Agentation } from "agentation";
 import { Analytics } from "@vercel/analytics/next";
+import { getContent } from "@/lib/content/store";
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://vikashpatanvadiya.vercel.app"),
-  title: "Vikash Patanvadiya",
-  description:
-    "3rd-year student building web3 & AI agents on Solana. $1000 Superteam UK bounty, hackathon winner.",
-  icons: {
-    icon: "/favicon.png",
-  },
-  openGraph: {
-    title: "Vikash Patanvadiya (@VPatanvadi89747)",
-    description: "Building web3 & AI agents on Solana.",
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { profile } = await getContent();
+  const title = profile.name || "Portfolio";
+  return {
+    metadataBase: URL.canParse(profile.siteUrl) ? new URL(profile.siteUrl) : new URL("https://bansi.me"),
+    title: { default: title, template: `%s | ${title}` },
+    description: profile.seoDescription || profile.headline,
+    icons: { icon: "/favicon.png" },
+    openGraph: {
+      title,
+      description: profile.headline || profile.seoDescription,
+      type: "website",
+    },
+  };
+}
 
 // Set the theme before paint to avoid a flash. Defaults to dark (X style)
 // unless the visitor has explicitly chosen light.

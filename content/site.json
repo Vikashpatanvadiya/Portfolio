@@ -1,0 +1,220 @@
+{
+  "profile": {
+    "name": "Vikash Patanvadiya",
+    "brand": "vikash.code",
+    "headline": "3rd-year student (grad 2028). building web3 & AI agents on Solana.",
+    "bio": "based in India. i'm a 3rd-year student who loves to code and ship fast. i started on the web2 side — trackers, community sites, interactive experiences — and i'm now going all-in on web3 & AI agents on Solana.\n\nright now i'm focused on showing up **consistently** — building and learning in web3, week after week. i document the whole journey in the open, so if you want to follow along it's all on [X](https://x.com/vikash_sol).\n\noutside of code, i play cricket, shoot photography ([@b1_clicks](https://www.instagram.com/b1_clicks/)), and always have music on. i love to travel too — but i'm holding off for now. i want to travel with my family, on money i earn myself. that's the trip i'm building toward.",
+    "location": "India",
+    "avatar": "/profile.jpg",
+    "banner": "/banner.jpg",
+    "resumeUrl": "",
+    "highlights": "",
+    "seoDescription": "3rd-year student building web3 & AI agents on Solana. $1000 Superteam UK bounty, hackathon winner.",
+    "siteUrl": "https://bansi.me"
+  },
+  "sections": [
+    {
+      "id": "projects",
+      "type": "projects",
+      "slug": "projects",
+      "title": "Projects",
+      "description": "things i've built and shipped — from web3 to AI to web apps.",
+      "visible": true,
+      "showInNav": true,
+      "items": [
+        {
+          "id": "medialayer",
+          "name": "Medialayer",
+          "category": "web3",
+          "start": "",
+          "end": "",
+          "description": "on-chain media & content layer — my flagship build.",
+          "role": "",
+          "builtAt": "",
+          "stack": [],
+          "achievements": "",
+          "takeaway": "",
+          "github": "https://github.com/Vikashpatanvadiya/Medialayer",
+          "live": "https://medialayer.app",
+          "demo": "",
+          "image": "",
+          "featured": false
+        },
+        {
+          "id": "sathi-ai",
+          "name": "Sathi-AI",
+          "category": "ai",
+          "start": "",
+          "end": "",
+          "description": "an AI companion that actually helps.",
+          "role": "",
+          "builtAt": "",
+          "stack": [],
+          "achievements": "",
+          "takeaway": "",
+          "github": "https://github.com/Vikashpatanvadiya/Sathi-AI",
+          "live": "",
+          "demo": "https://www.youtube.com/watch?v=AcGQ3MWQQq8",
+          "image": "",
+          "featured": false
+        },
+        {
+          "id": "superteam-my",
+          "name": "Superteam Malaysia",
+          "category": "landing page",
+          "start": "",
+          "end": "",
+          "description": "community site for Superteam Malaysia.",
+          "role": "",
+          "builtAt": "",
+          "stack": [],
+          "achievements": "",
+          "takeaway": "",
+          "github": "https://github.com/Vikashpatanvadiya/superteam_malysia",
+          "live": "https://superteam-malysia.vercel.app",
+          "demo": "",
+          "image": "",
+          "featured": false
+        },
+        {
+          "id": "pantry",
+          "name": "Pantry",
+          "category": "web app + PWA (mobile app)",
+          "start": "",
+          "end": "",
+          "description": "a smart pantry & inventory tracker.",
+          "role": "",
+          "builtAt": "",
+          "stack": [],
+          "achievements": "",
+          "takeaway": "",
+          "github": "https://github.com/Vikashpatanvadiya/Pantry",
+          "live": "https://pantry-pantry-tracker.vercel.app",
+          "demo": "",
+          "image": "",
+          "featured": false
+        },
+        {
+          "id": "scrolly",
+          "name": "Scrolly",
+          "category": "web3",
+          "start": "",
+          "end": "",
+          "description": "a scroll-driven interactive web experience.",
+          "role": "",
+          "builtAt": "",
+          "stack": [],
+          "achievements": "",
+          "takeaway": "",
+          "github": "https://github.com/Vikashpatanvadiya/scrolly",
+          "live": "https://scrolly-beta.vercel.app",
+          "demo": "",
+          "image": "",
+          "featured": false
+        },
+        {
+          "id": "beenas",
+          "name": "Beenas",
+          "category": "web app",
+          "start": "",
+          "end": "",
+          "description": "a demo web experience built for a client.",
+          "role": "",
+          "builtAt": "",
+          "stack": [],
+          "achievements": "",
+          "takeaway": "",
+          "github": "https://github.com/Vikashpatanvadiya/beenas_demoweb",
+          "live": "https://beenas-demoweb.vercel.app",
+          "demo": "",
+          "image": "",
+          "featured": false
+        }
+      ]
+    },
+    {
+      "id": "journey",
+      "type": "timeline",
+      "slug": "journey",
+      "title": "Journey",
+      "description": "from curiosity to code — here's how i've grown as a builder.",
+      "visible": true,
+      "showInNav": true,
+      "items": [
+        {
+          "id": "32f0c2db",
+          "date": "2021",
+          "title": "bye",
+          "body": "cwefeqw"
+        },
+        {
+          "id": "993024b5",
+          "date": "2020",
+          "title": "hello",
+          "body": "this is from where i started"
+        }
+      ]
+    },
+    {
+      "id": "wins",
+      "type": "list",
+      "slug": "wins",
+      "title": "Wins",
+      "description": "wall of wins.",
+      "visible": true,
+      "showInNav": true,
+      "items": [
+        {
+          "id": "w1",
+          "text": "Won a US$1,000 bounty from [Superteam UK](https://x.com/SuperteamUK)."
+        },
+        {
+          "id": "w2",
+          "text": "Won in a Web2 Hackathon by developing a Smart Attendance System."
+        }
+      ]
+    },
+    {
+      "id": "contact",
+      "type": "contact",
+      "slug": "contact",
+      "title": "Contact",
+      "description": "say hi — dms are open.",
+      "visible": true,
+      "showInNav": true,
+      "items": [
+        {
+          "id": "x",
+          "label": "x (twitter)",
+          "href": "https://x.com/vikash_sol"
+        },
+        {
+          "id": "github",
+          "label": "github",
+          "href": "https://github.com/Vikashpatanvadiya"
+        },
+        {
+          "id": "instagram",
+          "label": "instagram",
+          "href": "https://www.instagram.com/bansi.here/"
+        },
+        {
+          "id": "photography",
+          "label": "photography",
+          "href": "https://www.instagram.com/b1_clicks/"
+        },
+        {
+          "id": "telegram",
+          "label": "telegram",
+          "href": "https://t.me/Bansidev"
+        },
+        {
+          "id": "email",
+          "label": "email",
+          "href": "mailto:vpatanvadiya2022@gmail.com"
+        }
+      ]
+    }
+  ],
+  "updatedAt": "2026-09-22T06:40:13.376Z"
+}
