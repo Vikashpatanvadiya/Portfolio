@@ -16,7 +16,7 @@ import {
   type TimelineItem,
 } from "@/lib/content/types";
 import { logout, saveContent } from "./actions";
-import { Area, Card, Chips, IconBtn, Text, Toggle, grid, move } from "./fields";
+import { Area, Card, Chips, IconBtn, SmartUrlInput, Text, Toggle, grid, move } from "./fields";
 
 type View = { kind: "profile" } | { kind: "section"; id: string } | { kind: "new" };
 
@@ -179,13 +179,13 @@ function ProfilePanel({ profile: p, set }: { profile: Profile; set: (patch: Part
           <Area label="About / bio" hint={FORMAT_HINT} value={p.bio} onChange={(bio) => set({ bio })} rows={9} />
           <Area label="Highlights under your name" hint="one per line — e.g. Member [@superteam](https://x.com/superteam)" value={p.highlights} onChange={(highlights) => set({ highlights })} rows={3} />
           <Text label="Location" value={p.location} onChange={(location) => set({ location })} />
-          <Text label="Resume link" value={p.resumeUrl} onChange={(resumeUrl) => set({ resumeUrl })} placeholder="https://… or /resume.pdf" hint="shows a Resume button on the home page" />
+          <SmartUrlInput label="Resume link" value={p.resumeUrl} onChange={(resumeUrl) => set({ resumeUrl })} placeholder="https://… or /resume.pdf" hint="shows a Resume button on the home page" wide />
         </div>
       </Card>
       <Card>
         <div className={grid}>
-          <Text label="Profile photo URL" value={p.avatar} onChange={(avatar) => set({ avatar })} placeholder="/profile.jpg" />
-          <Text label="Banner image URL" value={p.banner} onChange={(banner) => set({ banner })} placeholder="/banner.jpg" />
+          <SmartUrlInput label="Profile photo URL" value={p.avatar} onChange={(avatar) => set({ avatar })} placeholder="/profile.jpg" />
+          <SmartUrlInput label="Banner image URL" value={p.banner} onChange={(banner) => set({ banner })} placeholder="/banner.jpg" />
           <div className="flex items-end gap-3 sm:col-span-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             {p.avatar && <img src={p.avatar} alt="" className="h-14 w-14 rounded-xl border border-border object-cover" />}
@@ -345,10 +345,10 @@ function ItemForm({ type, item, set }: { type: SectionType; item: Section["items
           <Chips label="Tech stack" value={p.stack} onChange={(stack) => set({ stack })} placeholder="Next.js, Rust, Anchor…" />
           <Area label="What it achieved" hint="one per line — prizes, users, revenue, results" value={p.achievements} onChange={(achievements) => set({ achievements })} rows={3} placeholder={"1st place, Wormhole track\n500+ users in the first week"} />
           <Area label="Takeaway (optional)" value={p.takeaway} onChange={(takeaway) => set({ takeaway })} rows={2} placeholder="What did you learn building it?" />
-          <Text label="Live link" value={p.live} onChange={(live) => set({ live })} placeholder="https://…" />
-          <Text label="GitHub" value={p.github} onChange={(github) => set({ github })} placeholder="https://github.com/…" />
-          <Text label="Demo video" value={p.demo} onChange={(demo) => set({ demo })} placeholder="YouTube / Loom link" />
-          <Text label="Cover image URL (optional)" value={p.image} onChange={(image) => set({ image })} placeholder="https://…/screenshot.png" />
+          <SmartUrlInput label="Live link" value={p.live} onChange={(live) => set({ live })} placeholder="https://…" />
+          <SmartUrlInput label="GitHub" value={p.github} onChange={(github) => set({ github })} placeholder="https://github.com/…" />
+          <SmartUrlInput label="Demo video" value={p.demo} onChange={(demo) => set({ demo })} placeholder="YouTube / Loom link" wide />
+          <SmartUrlInput label="Cover image URL (optional)" value={p.image} onChange={(image) => set({ image })} placeholder="https://…/screenshot.png" />
           <div className="sm:col-span-2">
             <Toggle label="Feature on home page" checked={p.featured} onChange={(featured) => set({ featured })} />
           </div>
@@ -383,7 +383,7 @@ function ItemForm({ type, item, set }: { type: SectionType; item: Section["items
       return (
         <div className={grid}>
           <Text label="Label" value={l.label} onChange={(label) => set({ label })} placeholder="email / github / telegram" />
-          <Text label="Link" value={l.href} onChange={(href) => set({ href })} placeholder="https://… or mailto:you@…" />
+          <SmartUrlInput label="Link" value={l.href} onChange={(href) => set({ href })} placeholder="https://… or mailto:you@…" />
         </div>
       );
     }

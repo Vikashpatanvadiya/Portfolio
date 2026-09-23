@@ -1,6 +1,7 @@
 "use client";
 
-import { useId, useState, type ReactNode } from "react";
+import { useId, useRef, useState, useCallback, useEffect, type ReactNode } from "react";
+import type { LinkPreview } from "@/app/api/link-preview/route";
 
 /* Small form kit for the admin editor. */
 
@@ -117,4 +118,226 @@ export function move<T>(list: T[], index: number, dir: -1 | 1): T[] {
   const next = [...list];
   [next[index], next[j]] = [next[j], next[index]];
   return next;
+}
+
+/* ------------------------------------------------------------------ */
+/*  SmartUrlInput                                                       */
+/*  Detects pasted URLs → fetches OG preview → shows card with embed   */
+/* ------------------------------------------------------------------ */
+
+const URL_RE = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
+
+const KIND_ICON: Record<LinkPreview["kind"], string> = {
+  github: "⌥",   // will be replaced with logo-like label
+  youtube: "▶",
+  twitter: "𝕏",
+  loom: "⏺",
+  generic: "🔗",
+};
+
+const KIND_LABEL: Record<LinkPreview["kind"], string> = {
+  github: "GitHub",
+  youtube: "YouTube",
+  twitter: "X / Twitter",
+  loom: "Loom",
+  generic: "Link",
+};
+
+type EmbedChoice = "link" | "embed";
+
+export function SmartUrlInput({
+  label,
+  hint,
+  value,
+  onChange,
+  placeholder,
+  wide,
+}: {
+  label: string;
+  hint?: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  wide?: boolean;
+}) {
+  const [preview, setPreview] = useState<LinkPreview | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [embedChoice, setEmbedChoice] = useState<EmbedChoice>("link");
+  const [previewError, setPreviewError] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastFetched = useRef("");
+
+  const fetchPreview = useCallback(async (url: string) => {
+    if (!URL_RE.test(url) || url === lastFetched.current) return;
+    lastFetched.current = url;
+    setLoading(true);
+    setPreviewError(false);
+    try {
+      const res = await fetch(`/api/link-preview?url=${encodeURIComponent(url)}`);
+      if (!res.ok) throw new Error("failed");
+      const data: LinkPreview = await res.json();
+      setPreview(data);
+      // Auto-select embed if possible
+      setEmbedChoice(data.embedUrl ? "embed" : "link");
+    } catch {
+      setPreviewError(true);
+      setPreview(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Debounced fetch when value changes and looks like a URL
+  useEffect(() => {
+    if (!value || !URL_RE.test(value)) {
+      setPreview(null);
+      setPreviewError(false);
+      return;
+    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => fetchPreview(value), 600);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [value, fetchPreview]);
+
+  return (
+    <Field label={label} hint={hint} wide={wide}>
+      {(id) => (
+        <div className="space-y-2">
+          {/* Input row */}
+          <div className="relative flex items-center">
+            <input
+              id={id}
+              type="url"
+              value={value}
+              placeholder={placeholder ?? "https://…"}
+              onChange={(e) => onChange(e.target.value)}
+              onPaste={(e) => {
+                // immediate fetch on paste without waiting for debounce
+                const pasted = e.clipboardData.getData("text").trim();
+                if (URL_RE.test(pasted)) {
+                  // Let the input update first, then fetch
+                  setTimeout(() => fetchPreview(pasted), 0);
+                }
+              }}
+              className={`${inputCls} pr-8`}
+            />
+            {loading && (
+              <span className="pointer-events-none absolute right-2.5 text-xs text-muted animate-pulse">⟳</span>
+            )}
+            {!loading && value && URL_RE.test(value) && (
+              <a
+                href={value}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Open link"
+                onClick={(e) => e.stopPropagation()}
+                className="absolute right-2.5 text-xs text-muted hover:text-foreground transition-colors"
+              >
+                ↗
+              </a>
+            )}
+          </div>
+
+          {/* Highlighted clickable link pill */}
+          {value && URL_RE.test(value) && (
+            <div className="flex items-center gap-2">
+              <a
+                href={value}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-w-0 items-center gap-1.5 rounded-full border border-foreground/20 bg-foreground/5 px-3 py-1 text-xs font-medium text-foreground hover:bg-foreground/10 hover:border-foreground/40 transition-colors"
+              >
+                <span className="opacity-60">
+                  {preview ? KIND_ICON[preview.kind] : "🔗"}
+                </span>
+                <span className="truncate max-w-[280px]">{value}</span>
+                <span className="opacity-50">↗</span>
+              </a>
+              {preview && (
+                <span className="rounded-md bg-hover px-2 py-0.5 text-[10px] font-medium text-muted uppercase tracking-wide">
+                  {KIND_LABEL[preview.kind]}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Error state */}
+          {previewError && (
+            <p className="text-xs text-muted/60 italic">couldn't load preview — link saved as-is</p>
+          )}
+
+          {/* Preview card */}
+          {preview && (
+            <div className="rounded-xl border border-border overflow-hidden">
+              {/* Embed / Link toggle */}
+              {preview.embedUrl && (
+                <div className="flex items-center gap-1 border-b border-border bg-hover px-3 py-2">
+                  <span className="text-xs text-muted mr-2">Display as:</span>
+                  {(["link", "embed"] as EmbedChoice[]).map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setEmbedChoice(c)}
+                      className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                        embedChoice === c
+                          ? "bg-foreground text-background"
+                          : "text-muted hover:bg-border hover:text-foreground"
+                      }`}
+                    >
+                      {c === "embed" ? "▶ Embed" : "🔗 Link card"}
+                    </button>
+                  ))}
+                  <span className="ml-auto text-[10px] text-muted/60 italic">preview only — choice saved with your content</span>
+                </div>
+              )}
+
+              {/* Embed iframe */}
+              {preview.embedUrl && embedChoice === "embed" ? (
+                <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+                  <iframe
+                    src={preview.embedUrl}
+                    title={preview.title || "Embedded content"}
+                    className="absolute inset-0 h-full w-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              ) : (
+                /* OG link card */
+                <a
+                  href={preview.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex gap-3 p-3 hover:bg-hover transition-colors group"
+                >
+                  {preview.image && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={preview.image}
+                      alt=""
+                      className="h-16 w-24 flex-none rounded-lg border border-border object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                    />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium group-hover:underline">
+                      {preview.title || preview.url}
+                    </p>
+                    {preview.description && (
+                      <p className="mt-0.5 line-clamp-2 text-xs text-muted">{preview.description}</p>
+                    )}
+                    <p className="mt-1 flex items-center gap-1 text-[10px] text-muted/60">
+                      <span>{KIND_ICON[preview.kind]}</span>
+                      <span>{preview.siteName || new URL(preview.url).hostname}</span>
+                    </p>
+                  </div>
+                  <span className="self-start text-muted opacity-0 group-hover:opacity-100 transition-opacity text-xs">↗</span>
+                </a>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </Field>
+  );
 }
