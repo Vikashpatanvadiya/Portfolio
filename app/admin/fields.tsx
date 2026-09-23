@@ -341,3 +341,250 @@ export function SmartUrlInput({
     </Field>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/*  SmartArea                                                           */
+/*  Textarea that detects a pasted URL and offers inline insert options */
+/* ------------------------------------------------------------------ */
+
+const BARE_URL_RE = /^https?:\/\/[^\s<>"')\]]+$/i;
+
+type PopupState = {
+  url: string;
+  /** caret position in the textarea where the URL was inserted */
+  insertStart: number;
+  insertEnd: number;
+  /** pixel coords for the floating popup */
+  top: number;
+  left: number;
+  /** OG fetch state */
+  fetching: boolean;
+  title: string | null;
+};
+
+export function SmartArea({
+  label,
+  hint,
+  value,
+  onChange,
+  placeholder,
+  rows = 4,
+}: {
+  label: string;
+  hint?: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  rows?: number;
+}) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [popup, setPopup] = useState<PopupState | null>(null);
+
+  const dismiss = useCallback(() => setPopup(null), []);
+
+  // Close popup on Escape or click outside
+  useEffect(() => {
+    if (!popup) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") dismiss(); };
+    const onClick = (e: MouseEvent) => {
+      const el = (e.target as Element).closest("[data-smart-popup]");
+      if (!el) dismiss();
+    };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("mousedown", onClick);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("mousedown", onClick);
+    };
+  }, [popup, dismiss]);
+
+  const handlePaste = useCallback(
+    async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+      const pasted = e.clipboardData.getData("text").trim();
+      if (!BARE_URL_RE.test(pasted)) return; // not a plain URL — let browser handle normally
+
+      e.preventDefault(); // we'll insert it ourselves
+
+      const ta = e.currentTarget;
+      const { selectionStart: ss, selectionEnd: se } = ta;
+
+      // Insert the raw URL into the value at caret
+      const next = value.slice(0, ss) + pasted + value.slice(se);
+      onChange(next);
+
+      const insertEnd = ss + pasted.length;
+
+      // Position the popup just below the textarea (simple — no per-line math)
+      const rect = ta.getBoundingClientRect();
+      const popupTop = rect.bottom + window.scrollY + 6;
+      const popupLeft = rect.left + window.scrollX;
+
+      setPopup({
+        url: pasted,
+        insertStart: ss,
+        insertEnd,
+        top: popupTop,
+        left: popupLeft,
+        fetching: true,
+        title: null,
+      });
+
+      // Restore caret after state update
+      requestAnimationFrame(() => {
+        ta.focus();
+        ta.setSelectionRange(insertEnd, insertEnd);
+      });
+
+      // Fetch OG title in background
+      try {
+        const res = await fetch(`/api/link-preview?url=${encodeURIComponent(pasted)}`);
+        if (res.ok) {
+          const data = await res.json() as { title?: string };
+          setPopup((p) => p ? { ...p, fetching: false, title: data.title || null } : null);
+        } else {
+          setPopup((p) => p ? { ...p, fetching: false } : null);
+        }
+      } catch {
+        setPopup((p) => p ? { ...p, fetching: false } : null);
+      }
+    },
+    [value, onChange]
+  );
+
+  /** Replace the raw URL in the text with a markdown link */
+  const convertToMarkdown = useCallback(
+    (customLabel?: string) => {
+      if (!popup) return;
+      const { url, insertStart, insertEnd } = popup;
+      const label = customLabel || url;
+      const md = `[${label}](${url})`;
+      const next = value.slice(0, insertStart) + md + value.slice(insertEnd);
+      onChange(next);
+      dismiss();
+      // Move caret to end of inserted markdown
+      requestAnimationFrame(() => {
+        const ta = textareaRef.current;
+        if (!ta) return;
+        ta.focus();
+        ta.setSelectionRange(insertStart + md.length, insertStart + md.length);
+      });
+    },
+    [popup, value, onChange, dismiss]
+  );
+
+  const id = useId();
+
+  return (
+    <div className={undefined /* wide is always true for Area */}>
+      <label htmlFor={id} className="mb-1.5 block text-xs font-medium text-muted">
+        {label}
+      </label>
+      <textarea
+        id={id}
+        ref={textareaRef}
+        rows={rows}
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+        onPaste={handlePaste}
+        className={`${inputCls} resize-y leading-relaxed sm:col-span-2`}
+      />
+      {hint && <p className="mt-1 text-xs text-muted/80">{hint}</p>}
+
+      {/* Floating popup — portalled via fixed positioning */}
+      {popup && (
+        <div
+          data-smart-popup
+          style={{ position: "fixed", top: popup.top, left: popup.left, zIndex: 9999 }}
+          className="w-80 rounded-xl border border-foreground/20 bg-background shadow-lg"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-border px-3 py-2">
+            <span className="text-xs font-semibold">Link detected</span>
+            <button
+              type="button"
+              onClick={dismiss}
+              className="text-sm text-muted hover:text-foreground"
+              aria-label="Dismiss"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* URL preview row */}
+          <div className="px-3 py-2">
+            <a
+              href={popup.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-full border border-foreground/20 bg-foreground/5 px-2.5 py-1 text-xs font-medium text-foreground hover:bg-foreground/10 transition-colors"
+            >
+              <span className="truncate">{popup.url}</span>
+              <span className="opacity-50 flex-none">↗</span>
+            </a>
+            {popup.fetching && (
+              <span className="ml-2 text-[10px] text-muted animate-pulse">fetching title…</span>
+            )}
+          </div>
+
+          {/* Actions */}
+          <div className="space-y-1 px-3 pb-3">
+            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted">
+              Display as
+            </p>
+
+            {/* Markdown link with OG title (if fetched) */}
+            {popup.title && (
+              <button
+                type="button"
+                onClick={() => convertToMarkdown(popup.title!)}
+                className="w-full rounded-lg border border-border px-3 py-2 text-left text-xs hover:bg-hover transition-colors"
+              >
+                <span className="block font-medium">📎 Named link</span>
+                <span className="block text-muted mt-0.5 truncate">
+                  [{popup.title}]({popup.url})
+                </span>
+              </button>
+            )}
+
+            {/* Markdown link with custom "link" label */}
+            <button
+              type="button"
+              onClick={() => convertToMarkdown("link")}
+              className="w-full rounded-lg border border-border px-3 py-2 text-left text-xs hover:bg-hover transition-colors"
+            >
+              <span className="block font-medium">🔗 Generic "link"</span>
+              <span className="block text-muted mt-0.5 truncate">[link]({popup.url})</span>
+            </button>
+
+            {/* Markdown link using hostname as label */}
+            <button
+              type="button"
+              onClick={() => {
+                let host = popup.url;
+                try { host = new URL(popup.url).hostname.replace(/^www\./, ""); } catch { /* keep */ }
+                convertToMarkdown(host);
+              }}
+              className="w-full rounded-lg border border-border px-3 py-2 text-left text-xs hover:bg-hover transition-colors"
+            >
+              <span className="block font-medium">🌐 Site name</span>
+              <span className="block text-muted mt-0.5 truncate">
+                [{(() => { try { return new URL(popup.url).hostname.replace(/^www\./, ""); } catch { return popup.url; } })()}]({popup.url})
+              </span>
+            </button>
+
+            {/* Keep as raw URL (auto-linked on frontend) */}
+            <button
+              type="button"
+              onClick={dismiss}
+              className="w-full rounded-lg border border-dashed border-border px-3 py-2 text-left text-xs text-muted hover:bg-hover transition-colors"
+            >
+              <span className="block font-medium">Keep bare URL</span>
+              <span className="block mt-0.5">auto-linked on the site</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

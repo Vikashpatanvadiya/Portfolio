@@ -16,7 +16,7 @@ import {
   type TimelineItem,
 } from "@/lib/content/types";
 import { logout, saveContent } from "./actions";
-import { Area, Card, Chips, IconBtn, SmartUrlInput, Text, Toggle, grid, move } from "./fields";
+import { Area, Card, Chips, IconBtn, SmartArea, SmartUrlInput, Text, Toggle, grid, move } from "./fields";
 
 type View = { kind: "profile" } | { kind: "section"; id: string } | { kind: "new" };
 
@@ -176,8 +176,8 @@ function ProfilePanel({ profile: p, set }: { profile: Profile; set: (patch: Part
           <Text label="Name" value={p.name} onChange={(name) => set({ name })} />
           <Text label="Wordmark (top-left)" value={p.brand} onChange={(brand) => set({ brand })} placeholder="vikash.code" />
           <Text label="Headline" value={p.headline} onChange={(headline) => set({ headline })} wide />
-          <Area label="About / bio" hint={FORMAT_HINT} value={p.bio} onChange={(bio) => set({ bio })} rows={9} />
-          <Area label="Highlights under your name" hint="one per line — e.g. Member [@superteam](https://x.com/superteam)" value={p.highlights} onChange={(highlights) => set({ highlights })} rows={3} />
+          <SmartArea label="About / bio" hint={FORMAT_HINT} value={p.bio} onChange={(bio) => set({ bio })} rows={9} />
+          <SmartArea label="Highlights under your name" hint="one per line — e.g. Member [@superteam](https://x.com/superteam)" value={p.highlights} onChange={(highlights) => set({ highlights })} rows={3} />
           <Text label="Location" value={p.location} onChange={(location) => set({ location })} />
           <SmartUrlInput label="Resume link" value={p.resumeUrl} onChange={(resumeUrl) => set({ resumeUrl })} placeholder="https://… or /resume.pdf" hint="shows a Resume button on the home page" wide />
         </div>
@@ -274,7 +274,7 @@ function SectionPanel({
         <div className={grid}>
           <Text label="Title" value={s.title} onChange={(title) => patch({ title })} />
           <Text label="Page URL" value={s.slug} onChange={(v) => patch({ slug: slugify(v) })} hint={`bansi.me/${s.slug}`} />
-          <Area label="Intro line (optional)" value={s.description} onChange={(description) => patch({ description })} rows={2} />
+          <SmartArea label="Intro line (optional)" value={s.description} onChange={(description) => patch({ description })} rows={2} />
           <div className="flex flex-wrap gap-6 sm:col-span-2">
             <Toggle label="Visible on site" checked={s.visible} onChange={(visible) => patch({ visible })} />
             {s.items.length === 0 && <span className="text-xs text-muted">hidden on the site until you add something</span>}
@@ -339,12 +339,12 @@ function ItemForm({ type, item, set }: { type: SectionType; item: Section["items
           <Text label="Category / tag" value={p.category} onChange={(category) => set({ category })} placeholder="web3, ai, web app…" />
           <Text label="Started" value={p.start} onChange={(start) => set({ start })} placeholder="Feb 2025" />
           <Text label="Ended" value={p.end} onChange={(end) => set({ end })} placeholder="Oct 2025 / Present (leave empty if one-off)" />
-          <Area label="Description" hint={FORMAT_HINT} value={p.description} onChange={(description) => set({ description })} placeholder="What is it and what does it do?" />
+          <SmartArea label="Description" hint={FORMAT_HINT} value={p.description} onChange={(description) => set({ description })} placeholder="What is it and what does it do?" />
           <Text label="Your role" value={p.role} onChange={(role) => set({ role })} placeholder="Solo developer / founder" />
           <Text label="Where it was built" value={p.builtAt} onChange={(builtAt) => set({ builtAt })} placeholder="Solana Breakout Hackathon / client / personal" hint="supports [links](https://…)" />
           <Chips label="Tech stack" value={p.stack} onChange={(stack) => set({ stack })} placeholder="Next.js, Rust, Anchor…" />
-          <Area label="What it achieved" hint="one per line — prizes, users, revenue, results" value={p.achievements} onChange={(achievements) => set({ achievements })} rows={3} placeholder={"1st place, Wormhole track\n500+ users in the first week"} />
-          <Area label="Takeaway (optional)" value={p.takeaway} onChange={(takeaway) => set({ takeaway })} rows={2} placeholder="What did you learn building it?" />
+          <SmartArea label="What it achieved" hint="one per line — prizes, users, revenue, results" value={p.achievements} onChange={(achievements) => set({ achievements })} rows={3} placeholder={"1st place, Wormhole track\n500+ users in the first week"} />
+          <SmartArea label="Takeaway (optional)" value={p.takeaway} onChange={(takeaway) => set({ takeaway })} rows={2} placeholder="What did you learn building it?" />
           <SmartUrlInput label="Live link" value={p.live} onChange={(live) => set({ live })} placeholder="https://…" />
           <SmartUrlInput label="GitHub" value={p.github} onChange={(github) => set({ github })} placeholder="https://github.com/…" />
           <SmartUrlInput label="Demo video" value={p.demo} onChange={(demo) => set({ demo })} placeholder="YouTube / Loom link" wide />
@@ -361,12 +361,12 @@ function ItemForm({ type, item, set }: { type: SectionType; item: Section["items
         <div className={grid}>
           <Text label="Year / date" value={t.date} onChange={(date) => set({ date })} placeholder="2020" />
           <Text label="Title" value={t.title} onChange={(title) => set({ title })} placeholder="From getting curious to coding for the first time" />
-          <Area label="Story" hint={FORMAT_HINT} value={t.body} onChange={(body) => set({ body })} rows={10} placeholder="What happened, what you built, what you learned…" />
+          <SmartArea label="Story" hint={FORMAT_HINT} value={t.body} onChange={(body) => set({ body })} rows={10} placeholder="What happened, what you built, what you learned…" />
         </div>
       );
     }
     case "list":
-      return <Area label="Text" hint="supports **bold** and [links](https://…)" value={(item as ListItem).text} onChange={(text) => set({ text })} rows={2} />;
+      return <SmartArea label="Text" hint="supports **bold** and [links](https://…)" value={(item as ListItem).text} onChange={(text) => set({ text })} rows={2} />;
     case "skills": {
       const g = item as SkillGroup;
       return (
@@ -377,7 +377,7 @@ function ItemForm({ type, item, set }: { type: SectionType; item: Section["items
       );
     }
     case "text":
-      return <Area label="Text" hint={FORMAT_HINT} value={(item as TextItem).body} onChange={(body) => set({ body })} rows={8} />;
+      return <SmartArea label="Text" hint={FORMAT_HINT} value={(item as TextItem).body} onChange={(body) => set({ body })} rows={8} />;
     case "contact": {
       const l = item as ContactLink;
       return (

@@ -13,7 +13,9 @@ export function safeHref(href: string): string | null {
 
 export const isExternal = (href: string) => /^https?:/i.test(href);
 
-const TOKEN = /\*\*(.+?)\*\*|`([^`]+)`|\[([^\]]+)\]\(([^)\s]+)\)/g;
+// Groups: 1=bold 2=code 3=md-label 4=md-href 5=bare-url
+const TOKEN =
+  /\*\*(.+?)\*\*|`([^`]+)`|\[([^\]]+)\]\(([^)\s]+)\)|(https?:\/\/[^\s<>"')\]]+)/g;
 
 export function Inline({ text }: { text: string }) {
   const out: ReactNode[] = [];
@@ -21,14 +23,16 @@ export function Inline({ text }: { text: string }) {
   for (const m of text.matchAll(TOKEN)) {
     if (m.index > last) out.push(text.slice(last, m.index));
     const key = m.index;
-    if (m[1] !== undefined) out.push(<strong key={key}>{m[1]}</strong>);
-    else if (m[2] !== undefined)
+    if (m[1] !== undefined) {
+      out.push(<strong key={key}>{m[1]}</strong>);
+    } else if (m[2] !== undefined) {
       out.push(
         <code key={key} className="rounded bg-hover px-1 py-0.5 text-[0.9em]">
           {m[2]}
         </code>
       );
-    else {
+    } else if (m[3] !== undefined) {
+      // [label](href) markdown link
       const href = safeHref(m[4]);
       out.push(
         href ? (
@@ -38,6 +42,16 @@ export function Inline({ text }: { text: string }) {
         ) : (
           <Fragment key={key}>{m[3]}</Fragment>
         )
+      );
+    } else if (m[5] !== undefined) {
+      // bare https?:// URL — auto-link it, show just the hostname as label
+      const raw = m[5];
+      let display = raw;
+      try { display = new URL(raw).hostname.replace(/^www\./, ""); } catch { /* keep raw */ }
+      out.push(
+        <a key={key} href={raw} target="_blank" rel="noreferrer" className="underline decoration-border underline-offset-4">
+          {display}
+        </a>
       );
     }
     last = m.index + m[0].length;
